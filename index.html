@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christmas Countdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+
     <style>
-        /* CSS: This makes it look festive */
+        /* CSS: Festive and Mobile Responsive */
         body {
             background-color: #1a472a; /* Christmas Green */
             color: #ffffff;
@@ -14,59 +18,100 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh; /* Changed to min-height for mobile scrolling if needed */
             margin: 0;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrollbars from falling snow */
             background-image: radial-gradient(circle, #2d6641 0%, #1a472a 100%);
         }
 
         h1 {
-            font-size: 3rem;
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: 3.5rem;
             margin-bottom: 20px;
             text-shadow: 2px 2px 4px #000000;
             color: #d42426; /* Christmas Red */
-            background: #fff;
-            padding: 10px 20px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 30px;
+            border-radius: 50px;
+            text-align: center;
+            z-index: 10; /* Keeps text above snow */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .countdown-container {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             text-align: center;
+            z-index: 10; /* Keeps text above snow */
+            perspective: 1000px;
         }
 
         .time-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 15px;
             border: 2px solid #d42426;
             min-width: 80px;
             backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
         }
 
         .number {
-            font-size: 2.5rem;
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: 3rem;
             font-weight: bold;
             display: block;
+            line-height: 1;
+            text-shadow: 1px 1px 2px black;
         }
 
         .label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 5px;
+            display: block;
         }
 
-        /* Simple falling snow animation */
+        /* Mobile Optimizations */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+                width: 80%;
+                margin-bottom: 30px;
+            }
+
+            .countdown-container {
+                flex-wrap: wrap; /* Allows boxes to stack */
+                justify-content: center;
+                width: 95%;
+            }
+
+            .time-box {
+                flex: 1 1 40%; /* Each box takes ~40% width (2 per row) */
+                min-width: auto;
+            }
+        }
+
+        /* Snow Animation */
         .snowflake {
             position: absolute;
-            top: -10px;
+            top: -20px;
             color: #fff;
-            animation: fall linear infinite;
+            user-select: none;
+            pointer-events: none; /* Clicks pass through snow */
+            z-index: 1;
+            animation-name: fall;
+            animation-timing-function: linear;
         }
 
         @keyframes fall {
-            to { transform: translateY(105vh); }
+            to { transform: translateY(110vh); }
         }
     </style>
 </head>
@@ -94,56 +139,66 @@
     </div>
 
     <script>
-        // JavaScript: This handles the math
+        // --- Countdown Logic ---
         function updateCountdown() {
             const now = new Date();
             const currentYear = now.getFullYear();
             
-            // Set date to December 25th of the current year
-            // Note: Month is 0-indexed (0 is Jan, 11 is Dec)
+            // Month is 0-indexed (0 is Jan, 11 is Dec)
             let christmas = new Date(currentYear, 11, 25);
 
-            // If Christmas has already passed this year, count down to next year
+            // If Christmas passed, count to next year
             if (now > christmas) {
                 christmas = new Date(currentYear + 1, 11, 25);
             }
 
             const diff = christmas - now;
 
-            // Calculate time components
             const d = Math.floor(diff / 1000 / 60 / 60 / 24);
             const h = Math.floor(diff / 1000 / 60 / 60) % 24;
             const m = Math.floor(diff / 1000 / 60) % 60;
             const s = Math.floor(diff / 1000) % 60;
 
-            // Update DOM
             document.getElementById('days').innerText = d < 10 ? '0' + d : d;
             document.getElementById('hours').innerText = h < 10 ? '0' + h : h;
             document.getElementById('minutes').innerText = m < 10 ? '0' + m : m;
             document.getElementById('seconds').innerText = s < 10 ? '0' + s : s;
         }
 
-        // Run immediately, then every second
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // Add simple snowflakes
+        // --- Optimized Snow Logic ---
         function createSnowflake() {
+            // Optimization: Stop creating if too many on screen
+            if (document.querySelectorAll('.snowflake').length > 50) return;
+
             const flake = document.createElement('div');
             flake.classList.add('snowflake');
-            flake.innerText = '❄';
-            flake.style.left = Math.random() * 100 + 'vw';
-            flake.style.animationDuration = Math.random() * 3 + 2 + 's'; // 2-5s duration
-            flake.style.opacity = Math.random();
-            flake.style.fontSize = Math.random() * 10 + 10 + 'px';
             
+            // Random snow characters
+            const shapes = ['❄', '❅', '❆', '•'];
+            flake.innerText = shapes[Math.floor(Math.random() * shapes.length)];
+            
+            // Random positioning
+            flake.style.left = Math.random() * 100 + 'vw';
+            flake.style.opacity = Math.random();
+            flake.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            
+            // Random fall speed (3s to 8s)
+            const duration = Math.random() * 5 + 3;
+            flake.style.animationDuration = duration + 's';
+
             document.body.appendChild(flake);
 
+            // Cleanup after animation
             setTimeout(() => {
                 flake.remove();
-            }, 5000);
+            }, duration * 1000);
         }
-        setInterval(createSnowflake, 100);
+
+        // Create snow every 200ms
+        setInterval(createSnowflake, 200);
     </script>
 </body>
 </html>
